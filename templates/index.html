@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIKD Browser - BPK RI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>tailwind.config={theme:{extend:{colors:{
+        primary:{50:'#f0f4ff',100:'#dbe4ff',500:'#5c7cfa',600:'#4c6ef5',700:'#4263eb'},
+        mint:{50:'#e6fcf5',100:'#c3fae8',500:'#20c997'},
+        coral:{50:'#fff5f5',500:'#ff6b6b'},
+        indigo:{50:'#edf2ff',100:'#dbe4ff',500:'#5c6bc0',600:'#3f51b5'},
+    }}}}</script>
+    <style>
+        body{font-family:'Plus Jakarta Sans',sans-serif}
+        .gradient-text{background:linear-gradient(135deg,#3f51b5,#5c6bc0);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .hero-bg{background:radial-gradient(ellipse at 20% 50%,rgba(63,81,181,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(76,110,245,.06) 0%,transparent 50%),linear-gradient(180deg,#f5f7ff,#fff)}
+        .card{background:#fff;border-radius:1rem;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid #f1f3f5}
+        .fade-in{animation:fadeIn .3s ease-out}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        .row-l0{font-weight:800;background:#edf2ff;font-size:.875rem}
+        .row-l1{font-weight:700;background:#f8f9fa;font-size:.8125rem;padding-left:1.5rem!important}
+        .row-l2{font-size:.8125rem;padding-left:2.5rem!important}
+        .pct-good{color:#0ca678}
+        .pct-warn{color:#f59f00}
+        .pct-bad{color:#e03131}
+    </style>
+</head>
+<body class="min-h-screen hero-bg">
+    <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+            <img src="/static/bpk-logo.png" alt="BPK" class="w-10 h-10 object-contain">
+            <div>
+                <h1 class="text-lg font-bold gradient-text">SIKD Browser</h1>
+                <p class="text-xs text-gray-400">Data APBD dari DJPK Kemenkeu</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6 space-y-5">
+        <!-- Hero -->
+        <section class="text-center py-4 fade-in">
+            <div class="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-500/20 text-indigo-600 text-xs font-bold px-4 py-1.5 rounded-full mb-3">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                Tools BPK RI
+            </div>
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-1">SIKD Browser</h2>
+            <p class="text-lg text-gray-500 mb-1">by <span class="font-bold gradient-text">Bashid Effendi</span></p>
+            <p class="text-sm text-gray-400 max-w-lg mx-auto">Jelajahi data APBD seluruh Pemda di Indonesia — Pendapatan, Belanja, dan Pembiayaan Daerah</p>
+        </section>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 justify-center">
+            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white" onclick="switchTab('browse')" id="tabBrowse">Lihat APBD</button>
+            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold bg-gray-100 text-gray-500" onclick="switchTab('compare')" id="tabCompare">Bandingkan Antar Tahun</button>
+        </div>
+
+        <!-- TAB: Browse -->
+        <section id="tab-browse" class="space-y-4">
+            <div class="card p-5">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Tahun</label>
+                        <select id="tahun" onchange="loadProvinsi()" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:border-indigo-400 outline-none">
+                            <script>for(let y=2026;y>=2011;y--) document.write(`<option value="${y}"${y===2025?' selected':''}>${y}</option>`)</script>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Provinsi</label>
+                        <select id="provinsi" onchange="loadPemda()" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:border-indigo-400 outline-none">
+                            <option value="--">Semua Provinsi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Pemda</label>
+                        <select id="pemda" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:border-indigo-400 outline-none">
+                            <option value="--">Semua Pemda</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Periode (Bulan)</label>
+                        <select id="periode" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:border-indigo-400 outline-none">
+                            <script>for(let m=12;m>=1;m--) document.write(`<option value="${m}"${m===12?' selected':''}>${m}</option>`)</script>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="loadAPBD()" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition-all">Tampilkan Data APBD</button>
+            </div>
+            <div id="apbdResult"></div>
+        </section>
+
+        <!-- TAB: Compare -->
+        <section id="tab-compare" class="space-y-4 hidden">
+            <div class="card p-5">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Tahun (pisah koma)</label>
+                        <input type="text" id="compareTahun" value="2023,2024,2025" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:border-indigo-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Provinsi</label>
+                        <select id="compareProvinsi" onchange="loadComparePemda()" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:border-indigo-400 outline-none">
+                            <option value="--">Pilih Provinsi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Pemda</label>
+                        <select id="comparePemda" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:border-indigo-400 outline-none">
+                            <option value="--">Pilih Pemda</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Periode</label>
+                        <select id="comparePeriode" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:border-indigo-400 outline-none">
+                            <script>for(let m=12;m>=1;m--) document.write(`<option value="${m}"${m===12?' selected':''}>${m}</option>`)</script>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="loadCompare()" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition-all">Bandingkan</button>
+            </div>
+            <div id="compareResult"></div>
+        </section>
+    </main>
+
+    <footer class="text-center py-6">
+        <p class="text-sm font-semibold text-gray-400">SIKD Browser <span class="gradient-text">by Bashid Effendi</span></p>
+        <p class="text-xs text-gray-300">Data dari <a href="https://djpk.kemenkeu.go.id" target="_blank" class="underline">DJPK Kementerian Keuangan</a></p>
+    </footer>
+
+<script>
+function switchTab(tab) {
+    document.getElementById('tab-browse').classList.toggle('hidden', tab !== 'browse');
+    document.getElementById('tab-compare').classList.toggle('hidden', tab !== 'compare');
+    document.getElementById('tabBrowse').className = `tab-btn px-4 py-2 rounded-xl text-sm font-semibold ${tab==='browse'?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`;
+    document.getElementById('tabCompare').className = `tab-btn px-4 py-2 rounded-xl text-sm font-semibold ${tab==='compare'?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`;
+}
+
+// Load provinsi on page load
+async function loadProvinsi() {
+    const tahun = document.getElementById('tahun').value;
+    try {
+        const resp = await fetch(`/api/provinsi?tahun=${tahun}`);
+        const data = await resp.json();
+        const sel = document.getElementById('provinsi');
+        sel.innerHTML = '<option value="--">Semua Provinsi</option>';
+        data.forEach(p => sel.innerHTML += `<option value="${p.kode}">${p.nama}</option>`);
+        // Also populate compare
+        const sel2 = document.getElementById('compareProvinsi');
+        sel2.innerHTML = '<option value="--">Pilih Provinsi</option>';
+        data.forEach(p => sel2.innerHTML += `<option value="${p.kode}">${p.nama}</option>`);
+    } catch(e) {}
+}
+
+async function loadPemda() {
+    const prov = document.getElementById('provinsi').value;
+    const tahun = document.getElementById('tahun').value;
+    const sel = document.getElementById('pemda');
+    sel.innerHTML = '<option value="--">Semua Pemda</option>';
+    if (prov === '--') return;
+    try {
+        const resp = await fetch(`/api/pemda?provinsi=${prov}&tahun=${tahun}`);
+        const data = await resp.json();
+        data.forEach(p => sel.innerHTML += `<option value="${p.kode}">${p.nama}</option>`);
+    } catch(e) {}
+}
+
+async function loadComparePemda() {
+    const prov = document.getElementById('compareProvinsi').value;
+    const sel = document.getElementById('comparePemda');
+    sel.innerHTML = '<option value="--">Pilih Pemda</option>';
+    if (prov === '--') return;
+    try {
+        const resp = await fetch(`/api/pemda?provinsi=${prov}&tahun=2025`);
+        const data = await resp.json();
+        data.forEach(p => sel.innerHTML += `<option value="${p.kode}">${p.nama}</option>`);
+    } catch(e) {}
+}
+
+// APBD Data
+async function loadAPBD() {
+    const tahun = document.getElementById('tahun').value;
+    const provinsi = document.getElementById('provinsi').value;
+    const pemda = document.getElementById('pemda').value;
+    const periode = document.getElementById('periode').value;
+    const el = document.getElementById('apbdResult');
+
+    el.innerHTML = '<div class="text-center py-8"><div class="inline-block w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div><p class="text-sm text-gray-400 mt-2">Memuat data APBD...</p></div>';
+
+    try {
+        const params = new URLSearchParams({tahun, provinsi, pemda, periode});
+        const resp = await fetch('/api/apbd?' + params);
+        const data = await resp.json();
+        if (data.error) { el.innerHTML = renderError(data.error); return; }
+        renderAPBD(data, el, tahun);
+    } catch(err) {
+        el.innerHTML = renderError(err.message);
+    }
+}
+
+function renderAPBD(data, el, tahun) {
+    if (!data.rows || !data.rows.length) {
+        el.innerHTML = '<div class="card p-6 text-center text-gray-400 text-sm">Data tidak tersedia</div>';
+        return;
+    }
+
+    // Summary cards
+    const pendapatan = data.rows.find(r => r.akun === 'Pendapatan Daerah');
+    const belanja = data.rows.find(r => r.akun === 'Belanja Daerah');
+    const pembiayaan = data.rows.find(r => r.akun === 'Pembiayaan Daerah');
+
+    let html = `<div class="fade-in space-y-4">
+        <div class="grid grid-cols-3 gap-3">
+            ${summaryCard('Pendapatan', pendapatan, '#0ca678')}
+            ${summaryCard('Belanja', belanja, '#e03131')}
+            ${summaryCard('Pembiayaan', pembiayaan, '#1971c2')}
+        </div>
+        <div class="card overflow-x-auto">
+            <table class="w-full text-xs">
+                <thead><tr class="bg-indigo-600 text-white">
+                    <th class="py-2.5 px-3 text-left">Akun</th>
+                    <th class="py-2.5 px-3 text-right">Anggaran (Rp)</th>
+                    <th class="py-2.5 px-3 text-right">Realisasi (Rp)</th>
+                    <th class="py-2.5 px-3 text-right w-20">%</th>
+                </tr></thead><tbody>`;
+
+    data.rows.forEach(r => {
+        const cls = r.level === 0 ? 'row-l0' : r.level === 1 ? 'row-l1' : 'row-l2';
+        const pctClass = pctColor(r.persentase);
+        html += `<tr class="${cls} border-b border-gray-50">
+            <td class="py-1.5 px-3">${esc(r.akun)}</td>
+            <td class="py-1.5 px-3 text-right font-mono">${fmtRp(r.anggaran)}</td>
+            <td class="py-1.5 px-3 text-right font-mono">${fmtRp(r.realisasi)}</td>
+            <td class="py-1.5 px-3 text-right font-bold ${pctClass}">${r.persentase ? r.persentase + '%' : '-'}</td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div></div>';
+    el.innerHTML = html;
+}
+
+function summaryCard(label, row, color) {
+    if (!row) return `<div class="card p-4 text-center"><p class="text-xs text-gray-400">${label}</p><p class="text-gray-300">N/A</p></div>`;
+    return `<div class="card p-4 text-center" style="border-top:3px solid ${color}">
+        <p class="text-xs text-gray-400 mb-1">${label}</p>
+        <p class="text-sm font-extrabold text-gray-800">${fmtRpShort(row.anggaran)}</p>
+        <p class="text-xs text-gray-400 mt-0.5">Realisasi: <span class="font-bold" style="color:${color}">${fmtRpShort(row.realisasi)}</span></p>
+        <p class="text-xs font-bold mt-0.5 ${pctColor(row.persentase)}">${row.persentase}%</p>
+    </div>`;
+}
+
+// Compare
+async function loadCompare() {
+    const tahun = document.getElementById('compareTahun').value.trim();
+    const provinsi = document.getElementById('compareProvinsi').value;
+    const pemda = document.getElementById('comparePemda').value;
+    const periode = document.getElementById('comparePeriode').value;
+    const el = document.getElementById('compareResult');
+
+    if (provinsi === '--' || pemda === '--') { alert('Pilih Provinsi dan Pemda untuk membandingkan'); return; }
+
+    el.innerHTML = '<div class="text-center py-8"><div class="inline-block w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div><p class="text-sm text-gray-400 mt-2">Memuat data perbandingan...</p></div>';
+
+    try {
+        const params = new URLSearchParams({tahun, provinsi, pemda, periode});
+        const resp = await fetch('/api/compare?' + params);
+        const data = await resp.json();
+        renderCompare(data, el);
+    } catch(err) {
+        el.innerHTML = renderError(err.message);
+    }
+}
+
+function renderCompare(data, el) {
+    const years = Object.keys(data).sort();
+    if (!years.length) { el.innerHTML = renderError('Tidak ada data'); return; }
+
+    // Collect all unique akun names
+    const allAkun = [];
+    const akunSet = new Set();
+    years.forEach(y => {
+        (data[y].rows || []).forEach(r => {
+            if (!akunSet.has(r.akun)) { akunSet.add(r.akun); allAkun.push({akun: r.akun, level: r.level}); }
+        });
+    });
+
+    let html = `<div class="card overflow-x-auto fade-in">
+        <table class="w-full text-xs">
+            <thead><tr class="bg-indigo-600 text-white">
+                <th class="py-2.5 px-3 text-left">Akun</th>`;
+    years.forEach(y => {
+        html += `<th class="py-2.5 px-2 text-right">Anggaran ${y}</th><th class="py-2.5 px-2 text-right">Realisasi ${y}</th><th class="py-2.5 px-2 text-right w-14">%</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    allAkun.forEach(a => {
+        const cls = a.level === 0 ? 'row-l0' : a.level === 1 ? 'row-l1' : 'row-l2';
+        html += `<tr class="${cls} border-b border-gray-50"><td class="py-1.5 px-3">${esc(a.akun)}</td>`;
+        years.forEach(y => {
+            const row = (data[y].rows || []).find(r => r.akun === a.akun);
+            if (row) {
+                html += `<td class="py-1.5 px-2 text-right font-mono">${fmtRp(row.anggaran)}</td>`;
+                html += `<td class="py-1.5 px-2 text-right font-mono">${fmtRp(row.realisasi)}</td>`;
+                html += `<td class="py-1.5 px-2 text-right font-bold ${pctColor(row.persentase)}">${row.persentase?row.persentase+'%':'-'}</td>`;
+            } else {
+                html += '<td class="py-1.5 px-2 text-center text-gray-300">-</td>'.repeat(3);
+            }
+        });
+        html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+}
+
+// Helpers
+function fmtRp(n) {
+    if (!n || n === 0) return '-';
+    return Math.round(n).toLocaleString('id-ID');
+}
+function fmtRpShort(n) {
+    if (!n) return '-';
+    if (n >= 1e12) return (n/1e12).toFixed(2) + ' T';
+    if (n >= 1e9) return (n/1e9).toFixed(2) + ' M';
+    if (n >= 1e6) return (n/1e6).toFixed(0) + ' Jt';
+    return Math.round(n).toLocaleString('id-ID');
+}
+function pctColor(p) {
+    const v = parseFloat(p);
+    if (isNaN(v)) return '';
+    if (v >= 90 && v <= 110) return 'pct-good';
+    if (v >= 70) return 'pct-warn';
+    return 'pct-bad';
+}
+function esc(s) { return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function renderError(msg) { return `<div class="card p-5 text-center"><p class="text-red-500 text-sm">${esc(msg)}</p></div>`; }
+
+// Init
+loadProvinsi();
+</script>
+</body>
+</html>
