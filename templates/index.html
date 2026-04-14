@@ -85,7 +85,13 @@
                         </select>
                     </div>
                 </div>
-                <button onclick="loadAPBD()" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition-all">Tampilkan Data APBD</button>
+                <div class="mt-3 flex gap-2">
+                    <button onclick="loadAPBD()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition-all">Tampilkan Data APBD</button>
+                    <button onclick="downloadExcel('single')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-xl text-sm transition-all flex items-center gap-1.5" title="Download Excel">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Excel
+                    </button>
+                </div>
             </div>
             <div id="apbdResult"></div>
         </section>
@@ -117,7 +123,13 @@
                         </select>
                     </div>
                 </div>
-                <button onclick="loadCompare()" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition-all">Bandingkan</button>
+                <div class="mt-3 flex gap-2">
+                    <button onclick="loadCompare()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition-all">Bandingkan</button>
+                    <button onclick="downloadExcel('compare')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-xl text-sm transition-all flex items-center gap-1.5" title="Download Excel">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Excel
+                    </button>
+                </div>
             </div>
             <div id="compareResult"></div>
         </section>
@@ -334,6 +346,30 @@ function pctColor(p) {
 }
 function esc(s) { return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function renderError(msg) { return `<div class="card p-5 text-center"><p class="text-red-500 text-sm">${esc(msg)}</p></div>`; }
+
+// Download Excel
+function downloadExcel(mode) {
+    let params, filename;
+    if (mode === 'compare') {
+        const tahunList = document.getElementById('compareTahun').value.trim();
+        const provinsi = document.getElementById('compareProvinsi').value;
+        const pemda = document.getElementById('comparePemda').value;
+        const periode = document.getElementById('comparePeriode').value;
+        if (provinsi === '--' || pemda === '--') { alert('Pilih Provinsi dan Pemda dulu'); return; }
+        const namaPemda = document.getElementById('comparePemda').selectedOptions[0]?.text || 'Pemda';
+        filename = `APBD_${namaPemda.replace(/[^a-zA-Z0-9]/g,'_')}_${tahunList.replace(/,/g,'-')}`;
+        params = new URLSearchParams({mode, tahun_list: tahunList, provinsi, pemda, periode, filename});
+    } else {
+        const tahun = document.getElementById('tahun').value;
+        const provinsi = document.getElementById('provinsi').value;
+        const pemda = document.getElementById('pemda').value;
+        const periode = document.getElementById('periode').value;
+        const namaPemda = document.getElementById('pemda').selectedOptions[0]?.text || (provinsi==='--'?'Semua':'Pemda');
+        filename = `APBD_${namaPemda.replace(/[^a-zA-Z0-9]/g,'_')}_${tahun}`;
+        params = new URLSearchParams({mode, tahun, provinsi, pemda, periode, filename});
+    }
+    window.location.href = '/api/download-excel?' + params;
+}
 
 // Init
 loadProvinsi();
