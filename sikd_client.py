@@ -127,22 +127,38 @@ def _parse_xml_spreadsheet(xml_text):
     # Categorize rows
     categorized = []
     for row in rows:
-        akun = str(row.get('Akun', '')).strip()
-        level = 0
-        if akun.startswith('  '):
+        akun_raw = str(row.get('Akun', ''))
+        # Hitung level dari jumlah leading spaces (1 space = level 1, 2+ spaces = level 2)
+        stripped = akun_raw.lstrip()
+        indent = len(akun_raw) - len(stripped)
+        if indent >= 2:
             level = 2
-        elif akun.startswith(' '):
+        elif indent == 1:
             level = 1
+        else:
+            level = 0
 
+        akun = stripped.strip()
         anggaran = row.get('Anggaran', 0)
         realisasi = row.get('Realisasi', 0)
         persentase = row.get('Persentase', '')
 
+        anggaran_num = anggaran if isinstance(anggaran, (int, float)) else 0
+        realisasi_num = realisasi if isinstance(realisasi, (int, float)) else 0
+
+        # Skip duplikat: kalau nama dan nilai sama persis dengan baris sebelumnya, skip
+        if categorized:
+            prev = categorized[-1]
+            if (prev['akun'] == akun and
+                prev['anggaran'] == anggaran_num and
+                prev['realisasi'] == realisasi_num):
+                continue
+
         categorized.append({
-            'akun': akun.strip(),
+            'akun': akun,
             'level': level,
-            'anggaran': anggaran if isinstance(anggaran, (int, float)) else 0,
-            'realisasi': realisasi if isinstance(realisasi, (int, float)) else 0,
+            'anggaran': anggaran_num,
+            'realisasi': realisasi_num,
             'persentase': str(persentase),
         })
 
